@@ -19,30 +19,55 @@ struct TodoListView: View {
     
     @State private var searchText = ""
     
-    var filteredItems: [TodoItem] {
-        if searchText.isEmpty {
-            return items
-        } else {
-            return items.filter { item in
-                item.details.lowercased().contains(searchText.lowercased())
-            }
-        }
-    }
-    
     
     // MARK: Computed properties
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(filteredItems) { item in
-                    NavigationLink {
-                        Text(item.details)
-                    } label: {
-                        Text(item.details)
+            
+            VStack {
+                HStack {
+                    
+                    TextField("Enter a to-do item", text: $newItemDetails)
+                    
+                    Button("Add") {
+                        addItem()
+                    }
+                    
+                }
+                .padding(20)
+                
+                
+                if items.isEmpty {
+                    
+                    ContentUnavailableView(label: {
+                        Label(
+                            "Nothing to do",
+                            systemImage: "powersleep"
+                        )
+                        .foregroundStyle(.green)
+                    }, description: {
+                        Text("To-do items will appear here once you add some.")
+                    })
+                    
+                } else {
+                    
+                    List {
+                        ForEach(filteredItems) { currentItem in
+                            Label {
+                                Text(currentItem.details)
+                            } icon: {
+                                Image(systemName: currentItem.isCompleted ? "checkmark.circle" : "circle")
+                                    .onTapGesture {
+                                        toggle(item: currentItem)
+                                    }
+                            }
+                        }
+                        .onDelete(perform: removeItems)
                     }
                 }
             }
-            .navigationTitle("Contacts")
+            .navigationTitle("Tasks")
+            
         }
         .onAppear {
             // Populate with example data
@@ -51,50 +76,7 @@ struct TodoListView: View {
             }
         }
         .searchable(text: $searchText)
-        
-        VStack {
-            HStack {
-                
-                TextField("Enter a to-do item", text: $newItemDetails)
-                
-                Button("Add") {
-                    addItem()
-                }
-                
-            }
-            .padding(20)
-            
-            
-            if items.isEmpty {
-                
-                ContentUnavailableView(label: {
-                    Label(
-                        "Nothing to do",
-                        systemImage: "powersleep"
-                    )
-                    .foregroundStyle(.green)
-                }, description: {
-                    Text("To-do items will appear here once you add some.")
-                })
-                
-            } else {
-                
-                List {
-                    ForEach(items) { currentItem in
-                        Label {
-                            Text(currentItem.details)
-                        } icon: {
-                            Image(systemName: currentItem.isCompleted ? "checkmark.circle" : "circle")
-                                .onTapGesture {
-                                    toggle(item: currentItem)
-                                }
-                        }
-                    }
-                    .onDelete(perform: removeItems)
-                }
-            }
-        }
-        .navigationTitle("Tasks")
+
     }
     
     
@@ -118,6 +100,16 @@ struct TodoListView: View {
     
     func removeItems(at offsets: IndexSet) {
         items.remove(atOffsets: offsets)
+    }
+    
+    var filteredItems: [TodoItem] {
+        if searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { item in
+                item.details.lowercased().contains(searchText.lowercased())
+            }
+        }
     }
     
 }
