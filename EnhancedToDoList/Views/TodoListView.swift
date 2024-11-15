@@ -17,63 +17,84 @@ struct TodoListView: View {
     // The item currently being created
     @State private var newItemDetails = ""
     
+    @State private var searchText = ""
+    
+    var filteredItems: [TodoItem] {
+        if searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { item in
+                item.details.lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
+    
     
     // MARK: Computed properties
     var body: some View {
         NavigationStack {
-            VStack {
-                
-                VStack {
-                    HStack {
-                        
-                        TextField("Enter a to-do item", text: $newItemDetails)
-                        
-                        Button("Add") {
-                            addItem()
-                        }
-                     
-                    }
-                    .padding(20)
-                    
-                    
-                    if items.isEmpty {
-                        
-                        ContentUnavailableView(label: {
-                            Label(
-                                "Nothing to do",
-                                systemImage: "powersleep"
-                            )
-                            .foregroundStyle(.green)
-                        }, description: {
-                            Text("To-do items will appear here once you add some.")
-                        })
-                        
-                    } else {
-                        
-                        List {
-                            ForEach(items) { currentItem in
-                                Label {
-                                    Text(currentItem.details)
-                                } icon: {
-                                    Image(systemName: currentItem.isCompleted ? "checkmark.circle" : "circle")
-                                        .onTapGesture {
-                                            toggle(item: currentItem)
-                                        }
-                                }
-                            }
-                            .onDelete(perform: removeItems)
-                        }
+            List {
+                ForEach(filteredItems) { item in
+                    NavigationLink {
+                        Text(item.details)
+                    } label: {
+                        Text(item.details)
                     }
                 }
             }
-            .navigationTitle("Tasks")
+            .navigationTitle("Contacts")
         }
         .onAppear {
             // Populate with example data
             if items.isEmpty {
-               items.append(contentsOf: exampleData)
+                items.append(contentsOf: exampleData)
             }
         }
+        .searchable(text: $searchText)
+        
+        VStack {
+            HStack {
+                
+                TextField("Enter a to-do item", text: $newItemDetails)
+                
+                Button("Add") {
+                    addItem()
+                }
+                
+            }
+            .padding(20)
+            
+            
+            if items.isEmpty {
+                
+                ContentUnavailableView(label: {
+                    Label(
+                        "Nothing to do",
+                        systemImage: "powersleep"
+                    )
+                    .foregroundStyle(.green)
+                }, description: {
+                    Text("To-do items will appear here once you add some.")
+                })
+                
+            } else {
+                
+                List {
+                    ForEach(items) { currentItem in
+                        Label {
+                            Text(currentItem.details)
+                        } icon: {
+                            Image(systemName: currentItem.isCompleted ? "checkmark.circle" : "circle")
+                                .onTapGesture {
+                                    toggle(item: currentItem)
+                                }
+                        }
+                    }
+                    .onDelete(perform: removeItems)
+                }
+            }
+        }
+        .navigationTitle("Tasks")
     }
     
     
