@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import Observation
+import SwiftData
  
-@Observable
-class TodoItem: Identifiable {
+@Model
+class TodoItem {
     // Identifiable to use an array of instances
     
     let id = UUID()
